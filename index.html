@@ -1,0 +1,2343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabajos Finales — Geología UNRN</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1D9E75;
+            --primary-light: #E1F5EE;
+            --secondary: #378ADD;
+            --text-primary: #2C2C2A;
+            --text-secondary: #5F5E5A;
+            --border: #D3D1C7;
+            --bg-surface: #FFFFFF;
+            --bg-page: #F1EFE8;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+        }
+
+        .header {
+            background: var(--bg-surface);
+            border-bottom: 0.5px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .nav {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav button {
+            background: transparent;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .nav button:hover {
+            background: var(--bg-page);
+            color: var(--text-primary);
+        }
+
+        .nav button.active {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .intro h1 {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .intro p {
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+
+
+        .territorio-summary {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin: 0 auto 2rem;
+            max-width: 980px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .territorio-summary h2 {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .territorio-summary p {
+            color: var(--text-primary);
+            line-height: 1.65;
+            font-size: 15px;
+            margin-bottom: 0.75rem;
+        }
+
+        .territorio-summary p:last-child {
+            margin-bottom: 0;
+        }
+
+
+
+        .aportes-section {
+            max-width: 1100px;
+            margin: 0 auto 2rem;
+        }
+
+        .aportes-intro {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .aportes-intro h2 {
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .aportes-intro p {
+            color: var(--text-primary);
+            line-height: 1.65;
+            font-size: 15px;
+            margin-bottom: 0.75rem;
+        }
+
+        .aportes-intro p:last-child {
+            margin-bottom: 0;
+        }
+
+        .aportes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .aporte-card {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1.15rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .aporte-card h3 {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.35;
+        }
+
+        .aporte-card p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .aportes-cierre {
+            background: var(--primary-light);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .filters {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 0.6rem;
+            border: 0.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--bg-surface);
+        }
+
+        #map {
+            height: 500px;
+            border-radius: 12px;
+            border: 0.5px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .mapa-layout {
+            display: grid;
+            grid-template-columns: 290px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .sidebar-filters {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.9rem;
+            position: sticky;
+            top: 100px;
+        }
+
+        .sidebar-filters .filter-group {
+            flex: none;
+            min-width: 100%;
+        }
+
+        .sidebar-filters .filter-group label {
+            margin-bottom: 0.4rem;
+        }
+
+        .mapa-canvas {
+            min-width: 0;
+        }
+
+        .sidebar-filters #buscar-mapa,
+        .sidebar-filters select {
+            width: 100%;
+        }
+
+        .trabajos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .trabajo-card {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .trabajo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .trabajo-header {
+            margin-bottom: 1rem;
+        }
+
+        .trabajo-titulo {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .trabajo-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .area-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-sedimentologia { background: #E1F5EE; color: #0F6E56; }
+        .badge-paleontologia { background: #E6F1FB; color: #185FA5; }
+        .badge-tectonica { background: #FAECE7; color: #993C1D; }
+        .badge-geoquimica { background: #FBEAF0; color: #993556; }
+        .badge-hidrogeologia { background: #EAF3DE; color: #3B6D11; }
+        .badge-geotecnia { background: #FAEEDA; color: #854F0B; }
+        .badge-petrologia { background: #F1EFE8; color: #5F5E5A; }
+        .badge-metalogenesis { background: #EEE6FB; color: #5A3A99; }
+
+        .aplicabilidad {
+            background: var(--primary-light);
+            border-left: 3px solid var(--primary);
+            padding: 0.75rem;
+            margin: 0.75rem 0;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+
+        .source-note {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-left: 4px solid var(--secondary);
+            border-radius: 12px;
+            padding: 0.9rem 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .stats-section {
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+        }
+
+        .stats-intro {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .stats-intro h2 {
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .stats-intro p {
+            color: var(--text-primary);
+            line-height: 1.65;
+            font-size: 15px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+
+        .stats-panels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+            gap: 1rem;
+        }
+
+        .stats-panel {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .stats-panel h3 {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .bar-row {
+            display: grid;
+            grid-template-columns: 130px 1fr 34px;
+            align-items: center;
+            gap: 0.6rem;
+            margin: 0.45rem 0;
+            font-size: 13px;
+        }
+
+        .bar-label {
+            color: var(--text-primary);
+            overflow-wrap: anywhere;
+        }
+
+        .bar-track {
+            background: var(--bg-page);
+            border-radius: 999px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            background: var(--primary);
+            height: 100%;
+            border-radius: 999px;
+        }
+
+        .bar-value {
+            text-align: right;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stats-footnote {
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .rid-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            font-size: 12px;
+            color: var(--secondary);
+            text-decoration: none;
+        }
+
+        .rid-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .trabajos-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav {
+                width: 100%;
+            }
+
+            .filter-group {
+                min-width: 100%;
+            }
+
+            .mapa-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-filters {
+                position: static;
+            }
+        }
+
+        /* ── Transición suave entre vistas ── */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+        .view-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Leyenda del mapa ── */
+        .mapa-legend {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            font-size: 13px;
+        }
+        .mapa-legend h4 {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.6rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.3rem 0;
+            color: var(--text-primary);
+        }
+        .legend-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 0 0 1.5px rgba(0,0,0,0.12);
+        }
+
+        /* ── Contador de resultados ── */
+        .results-count {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding: 0.4rem 0;
+        }
+        .results-count strong {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .mapa-counter {
+            margin-top: 0.75rem;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        .mapa-counter strong {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* ── Botón limpiar filtros ── */
+        .btn-clear {
+            background: transparent;
+            border: 0.5px solid var(--border);
+            border-radius: 8px;
+            padding: 0.45rem 0.9rem;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-clear:hover {
+            background: var(--bg-page);
+            color: var(--text-primary);
+            border-color: #bbb;
+        }
+        .filters-top {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ── Tarjetas resumen en estadísticas ── */
+        .stats-summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stats-summary-card {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .stats-summary-card .num {
+            font-size: 34px;
+            font-weight: 500;
+            color: var(--primary);
+            line-height: 1.1;
+            margin-bottom: 0.3rem;
+        }
+        .stats-summary-card .lbl {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+
+        /* ── Focus accesible ── */
+        input:focus-visible, select:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+            border-color: var(--primary);
+        }
+
+        /* ── Footer ── */
+        .site-footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-top: 0.5px solid var(--border);
+            margin-top: 3rem;
+            line-height: 1.6;
+        }
+        .site-footer a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🏔️ Trabajos Finales — Geología UNRN</div>
+            <nav class="nav">
+                <button class="active" data-view="mapa">Mapa</button>
+                <button data-view="trabajos">Todos</button>
+                <button data-view="aportes">Aportes</button>
+                <button data-view="estadisticas">Estadísticas</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="intro">
+            <h1>Trabajos finales de grado — Licenciatura en Geología</h1>
+            <p>Investigación básica y aplicada desde General Roca - Universidad Nacional de Río Negro y CONICET</p>
+        </div>
+
+        <div class="source-note" style="max-width:860px; margin: 0 auto 2rem;">
+            Los trabajos finales de grado suelen demorar un tiempo en incorporarse al <a href="https://rid.unrn.edu.ar/handle/20.500.12049/204" target="_blank" style="color:var(--secondary);">RID-UNRN</a>; algunos registros incluidos aquí provienen de anuncios públicos de defensa. Si encontrás errores en títulos, autores o directores, podés escribir a <a href="mailto:mtunik@unrn.edu.ar" style="color:var(--secondary);">mtunik@unrn.edu.ar</a>.
+        </div>
+
+
+        <!-- Vista Mapa -->
+        <div id="mapa-view" class="view-section active">
+            <div class="mapa-layout">
+                <aside class="filters sidebar-filters">
+                    <div class="filter-group">
+                        <label>Buscar</label>
+                        <input type="text" id="buscar-mapa" autocomplete="off" placeholder="Título, autor, director, codirector o aporte social/territorial...">
+                    </div>
+                    <div class="filter-group">
+                        <label>Área temática</label>
+                        <select id="area-mapa">
+                            <option value="">Todas las áreas</option>
+                            <option value="sedimentologia">Sedimentología</option>
+                            <option value="tectonica">Tectónica</option>
+                            <option value="petrologia">Petrología</option>
+                            <option value="geoquimica">Geoquímica</option>
+                            <option value="metalogenesis">Metalogénesis</option>
+                            <option value="paleontologia">Paleontología</option>
+                            <option value="hidrogeologia">Hidrogeología</option>
+                            <option value="geotecnia">Geotecnia</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Área de aplicación</label>
+                        <select id="aporte-mapa">
+                            <option value="">Todas las áreas de aplicación</option>
+                            <option value="Riesgos y planificación">Riesgos y planificación</option>
+                            <option value="Agua, ambiente y gestión pública">Agua, ambiente y gestión pública</option>
+                            <option value="Energía y transición energética">Energía y transición energética</option>
+                            <option value="Recursos minerales">Recursos minerales</option>
+                            <option value="Patrimonio y geoturismo">Patrimonio y geoturismo</option>
+                            <option value="Conocimiento geológico de base">Conocimiento geológico de base</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Año</label>
+                        <select id="anio-mapa">
+                            <option value="">Todos</option>
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                            <option value="2019">2019</option>
+                            <option value="2018">2018</option>
+                            <option value="2017">2017</option>
+                            <option value="2016">2016</option>
+                            <option value="2015">2015</option>
+                        </select>
+                    </div>
+                    <button class="btn-clear" id="limpiar-mapa">Limpiar filtros</button>
+                    <div class="mapa-legend">
+                        <h4>Área temática</h4>
+                        <div class="legend-item"><span class="legend-dot" style="background:#1D9E75"></span>Sedimentología</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#378ADD"></span>Paleontología</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#D85A30"></span>Tectónica</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#D4537E"></span>Geoquímica</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#7A57C7"></span>Metalogénesis</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#639922"></span>Hidrogeología</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#BA7517"></span>Geotecnia</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#888780"></span>Petrología</div>
+                    </div>
+                    <div class="mapa-counter" id="mapa-counter"></div>
+                </aside>
+                <div class="mapa-canvas">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Trabajos -->
+        <div id="trabajos-view" class="view-section">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Buscar</label>
+                    <input type="text" id="buscar-trabajos" autocomplete="off" placeholder="Título, autor, director, codirector o aporte social/territorial...">
+                </div>
+                <div class="filter-group">
+                    <label>Área temática</label>
+                    <select id="area-trabajos">
+                        <option value="">Todas las áreas</option>
+                        <option value="sedimentologia">Sedimentología</option>
+                        <option value="tectonica">Tectónica</option>
+                        <option value="petrologia">Petrología</option>
+                        <option value="geoquimica">Geoquímica</option>
+                        <option value="metalogenesis">Metalogénesis</option>
+                        <option value="paleontologia">Paleontología</option>
+                        <option value="hidrogeologia">Hidrogeología</option>
+                        <option value="geotecnia">Geotecnia</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Área de aplicación</label>
+                    <select id="aporte-trabajos">
+                        <option value="">Todas las áreas de aplicación</option>
+                        <option value="Riesgos y planificación">Riesgos y planificación</option>
+                        <option value="Agua, ambiente y gestión pública">Agua, ambiente y gestión pública</option>
+                        <option value="Energía y transición energética">Energía y transición energética</option>
+                        <option value="Recursos minerales">Recursos minerales</option>
+                        <option value="Patrimonio y geoturismo">Patrimonio y geoturismo</option>
+                        <option value="Conocimiento geológico de base">Conocimiento geológico de base</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Año</label>
+                    <select id="anio-trabajos">
+                        <option value="">Todos</option>
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                        <option value="2020">2020</option>
+                        <option value="2019">2019</option>
+                        <option value="2018">2018</option>
+                        <option value="2017">2017</option>
+                        <option value="2016">2016</option>
+                        <option value="2015">2015</option>
+                    </select>
+                </div>
+                <button class="btn-clear" id="limpiar-trabajos">Limpiar filtros</button>
+            </div>
+            <div class="results-count" id="results-count-trabajos"></div>
+            <div class="trabajos-grid" id="trabajos-grid"></div>
+            <div class="no-results" id="no-results" style="display: none;">
+                <p>No se encontraron trabajos con los filtros seleccionados</p>
+            </div>
+        </div>
+
+        <!-- Vista Aportes -->
+        <div id="aportes-view" class="view-section">
+            <section class="aportes-section">
+                <div class="aportes-intro">
+                    <h2>Aplicabilidad social y territorial</h2>
+                    <p>La aplicabilidad de estos trabajos no se limita a la industria. También incluye la producción de información útil para la toma de decisiones públicas, la gestión ambiental, la prevención de riesgos, la educación, la conservación del patrimonio y el fortalecimiento de capacidades profesionales en la región.</p>
+                    <p>En conjunto, las tesis muestran cómo la universidad pública transforma preguntas locales en conocimiento geológico disponible para municipios, organismos provinciales, escuelas, comunidades, áreas protegidas y sectores productivos.</p>
+                </div>
+
+                <div class="aportes-grid">
+                    <article class="aporte-card">
+                        <h3>Riesgos geológicos y planificación</h3>
+                        <p>Los estudios sobre inundaciones, erosión costera, remoción en masa, volcanismo, subsidencia y dinámica fluvial aportan información para ordenar el territorio, diseñar obras, reducir vulnerabilidades y mejorar la prevención.</p>
+                    </article>
+                    <article class="aporte-card">
+                        <h3>Agua, ambiente y gestión pública</h3>
+                        <p>Los trabajos hidrogeológicos, costeros y ambientales ayudan a conocer acuíferos, ríos, costas y posibles impactos de actividades productivas, generando insumos para la gestión responsable del agua y del ambiente.</p>
+                    </article>
+                    <article class="aporte-card">
+                        <h3>Energía y transición energética</h3>
+                        <p>Las tesis sobre reservorios, niveles sello, geotermia, hidrocarburos y almacenamiento geológico de CO₂ aportan datos para evaluar recursos, mejorar prácticas y discutir alternativas vinculadas con la mitigación del cambio climático.</p>
+                    </article>
+                    <article class="aporte-card">
+                        <h3>Recursos minerales y desarrollo productivo</h3>
+                        <p>Los estudios de alteración hidrotermal, mineralizaciones, geoquímica y teledetección reducen incertidumbre geológica y contribuyen a una exploración más informada, con criterios técnicos y mejor conocimiento del subsuelo.</p>
+                    </article>
+                    <article class="aporte-card">
+                        <h3>Patrimonio geológico, paleontológico y geoturismo</h3>
+                        <p>Los trabajos sobre fósiles, icnitas, sitios de interés geológico y paisajes singulares fortalecen la valoración social del patrimonio natural y pueden apoyar propuestas educativas, turísticas y de conservación.</p>
+                    </article>
+                    <article class="aporte-card">
+                        <h3>Cartografía y conocimiento de base</h3>
+                        <p>La cartografía, la estratigrafía, la petrografía y los estudios estructurales generan información geológica básica que queda disponible para futuras investigaciones, políticas públicas, infraestructura y gestión territorial.</p>
+                    </article>
+                    <article class="aporte-card">
+                        <h3>Formación profesional local</h3>
+                        <p>Cada tesis forma geólogas y geólogos con experiencia en problemas reales del territorio. Esa capacidad instalada permanece en la región y fortalece el vínculo entre universidad, Estado, sociedad y sector productivo.</p>
+                    </article>
+                </div>
+
+                <div class="aportes-cierre">
+                    En este sentido, cada trabajo final es también una forma de presencia territorial de la universidad pública: releva información, forma profesionales, construye memoria geológica y aporta herramientas para tomar mejores decisiones sobre el ambiente, los recursos y los riesgos.
+                </div>
+            </section>
+        </div>
+
+
+        <!-- Vista Estadísticas -->
+        <div id="estadisticas-view" class="view-section">
+            <section class="stats-section">
+                <div class="stats-summary-cards" id="stats-summary-cards"></div>
+                <div class="stats-panels">
+                    <div class="stats-panel">
+                        <h3>Trabajos por año</h3>
+                        <div id="stats-anios"></div>
+                    </div>
+                    <div class="stats-panel">
+                        <h3>Trabajos por área temática</h3>
+                        <div id="stats-areas"></div>
+                    </div>
+                    <div class="stats-panel">
+                        <h3>Aportes sociales y territoriales</h3>
+                        <div id="stats-aportes"></div>
+                        <div class="stats-footnote">Una tesis puede aportar a más de una categoría; por eso estos conteos no tienen que sumar el total de trabajos.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        Trabajos finales de grado — Licenciatura en Geología, Universidad Nacional de Río Negro •
+        Datos: <a href="https://rid.unrn.edu.ar" target="_blank">RID-UNRN</a> y registros institucionales •
+        Última actualización: mayo 2026
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // BASE DE DATOS DE TRABAJOS
+        const trabajos = [
+            {
+                        "id": 1,
+                        "titulo": "Caracterización geológica y estructural de unidades cretácicos - cenozoicas aflorantes entre la región entre la localidad de Ingeniero Jacobacci y la reserva Anecón Grande, suroeste de Río Negro",
+                        "autor": "Aguirre, Florencia Ailén",
+                        "director": "Orts, Darío Leandro",
+                        "anio": 2026,
+                        "area": "tectonica",
+                        "aplicabilidad": "Caracterización estructural para exploración de recursos minerales y evaluación de riesgos geológicos en la región norpatagónica.",
+                        "lat": -41.5,
+                        "lng": -69.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/14328",
+                        "codirector": "Paileman, Luciana",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 2,
+                        "titulo": "Distribución y caracterización petrográfica de las areniscas de la Formación Allen (Cretácico Superior) en la margen sur del río Negro y su comparación con las unidades infrayacentes del Grupo Neuquén",
+                        "autor": "Morón, Lucía",
+                        "director": "Tunik, Maisa Andrea",
+                        "anio": 2026,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Caracterización petrográfica de unidades cretácicas con aplicación a recursos sedimentarios, correlación estratigráfica y conocimiento geológico regional.",
+                        "lat": -39.0,
+                        "lng": -67.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/14319",
+                        "codirector": "Casadío, Silvio",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 3,
+                        "titulo": "Estructura y fabricación Magnética del Batolito Pilcaniyeu (Jurásico Inferior), Precordillera Patagónica, Río Negro",
+                        "autor": "Peletay Marticorena, Antonella Belen",
+                        "director": "Zaffarana, Claudia Beatriz",
+                        "anio": 2026,
+                        "area": "petrologia",
+                        "aplicabilidad": "Reconstrucción tectónica regional y estudios de deformación aplicables a la exploración de yacimientos metalíferos.",
+                        "lat": -41.2,
+                        "lng": -70.0,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/14106",
+                        "codirector": "González, Pablo Diego",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 4,
+                        "titulo": "Caracterización mineralógica y geoquímica de la Veta Rocío, distrito La Paloma, Macizo del Deseado, Santa Cruz, Argentina",
+                        "autor": "Catriquir, Melisa Aurora",
+                        "director": "Fernández, María Liz",
+                        "anio": 2026,
+                        "area": "metalogenesis",
+                        "aplicabilidad": "Exploración mineral de metales preciosos y evaluación del potencial económico de vetas epitermales.",
+                        "lat": -47.8,
+                        "lng": -67.0,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/14104",
+                        "codirector": "Pons, María Josefina",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 5,
+                        "titulo": "Simulación numérica de las fluctuaciones inducidas por marea en acuíferos libres",
+                        "autor": "Troncoso, Flavia Marina",
+                        "director": "Monachesi, Leonardo Bruno",
+                        "anio": 2026,
+                        "area": "hidrogeologia",
+                        "aplicabilidad": "Modelado hidrogeológico para gestión de recursos hídricos en zonas costeras.",
+                        "lat": -40.8,
+                        "lng": -62.9,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13907",
+                        "codirector": "Melo, Marisol",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 70,
+                        "titulo": "Mapeo de unidades ígneas y metamórficas mediante el análisis de datos ASTER entre los arroyos Tembrao y Pailemán, Macizo Nordpatagónico, Río Negro",
+                        "autor": "Olave Sandoval, Fabiola Stefania",
+                        "director": "Cabana, María Cecilia",
+                        "anio": 2026,
+                        "area": "petrologia",
+                        "aplicabilidad": "Cartografía geológica y teledetección aplicada al conocimiento de unidades ígneas y metamórficas del Macizo Nordpatagónico; insumo para estudios de basamento y exploración regional.",
+                        "lat": -41.05,
+                        "lng": -66.25,
+                        "ridUrl": "",
+                        "codirector": "González, Pablo Diego",
+                        "fuenteCodirector": "@unrngeo — anuncio público de defensa; pendiente de contraste con RID cuando esté disponible"
+            },
+            {
+                        "id": 6,
+                        "titulo": "Geología y cartografía de sitio de interés geológico en la Granodiorita Paso de Icalma entre los lagos Aluminé y Moquehue, Villa Pehuenia, Neuquén",
+                        "autor": "González, Lautaro",
+                        "director": "González, Pablo Diego",
+                        "anio": 2025,
+                        "area": "petrologia",
+                        "aplicabilidad": "Desarrollo de geoturismo y conservación del patrimonio geológico en áreas protegidas.",
+                        "lat": -38.9,
+                        "lng": -71.2,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13801",
+                        "codirector": "Cabana, María Cecilia",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 7,
+                        "titulo": "Caracterización de la alteración Hidrotermal del sistema de vetas en el área del Proyecto Toruel, implicancias en la exploración del distrito minero los Menucos, Río Negro",
+                        "autor": "Antilef, Kevin Nazareno",
+                        "director": "Pons, Maria Josefina",
+                        "anio": 2025,
+                        "area": "metalogenesis",
+                        "aplicabilidad": "Exploración mineral en el Macizo Nordpatagónico para identificación de blancos de perforación.",
+                        "lat": -40.8,
+                        "lng": -68.0,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13698",
+                        "codirector": "Hernando, Ignacio Nehuén",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 8,
+                        "titulo": "Caracterización Paleoambiental del miembro inferior de la formación Quintuco en el Yacimiento estación Fernández Oro a partir de la integración de datos de corona",
+                        "autor": "Cañas, Juan Manuel",
+                        "director": "Ponce, Juan José",
+                        "anio": 2025,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Modelado de reservorios petroleros y optimización de la recuperación secundaria en yacimientos maduros.",
+                        "lat": -38.95,
+                        "lng": -67.92,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13442",
+                        "codirector": "Montagna, Aldo Omar",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 9,
+                        "titulo": "Análisis de huellas de vertebrados en la formación Allen, Valle de la Luna, Paso Córdoba, Río Negro, Argentina",
+                        "autor": "Figueredo Vieyra, Imanol",
+                        "director": "de Valais, Silvina",
+                        "anio": 2025,
+                        "area": "paleontologia",
+                        "aplicabilidad": "Reconstrucción paleoambiental y desarrollo de sitios paleontológicos de interés turístico y educativo.",
+                        "lat": -39.03,
+                        "lng": -67.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13318",
+                        "codirector": "Citton, Paolo",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 10,
+                        "titulo": "Análisis temporal de la deformación cortical en el norte de Añelo, provincia del Neuquén, mediante Interferometría Diferencial de Radar de Apertura Sintética (DInSAR)",
+                        "autor": "Martinez Maliqueo, Esteban Vicente",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2025,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Monitoreo de deformación cortical y subsidencia asociada a procesos naturales o inducidos.",
+                        "lat": -38.5,
+                        "lng": -68.8,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13317",
+                        "codirector": "Deraw, Dominique Maurice",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 11,
+                        "titulo": "Evolución morfoestructural de las planicies elevadas de El Cuy y Reintería en el antepaís Norpatagónico",
+                        "autor": "Gallego, Fernando",
+                        "director": "Orts, Darío Leandro",
+                        "anio": 2025,
+                        "area": "tectonica",
+                        "aplicabilidad": "Análisis tectónico y geomorfológico para exploración de recursos y planificación de infraestructura.",
+                        "lat": -40.5,
+                        "lng": -68.2,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13314",
+                        "codirector": "Cabana, María Cecilia",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 12,
+                        "titulo": "Riesgo de Inundación del río Azul en zonas urbanas de Lago Puelo, Chubut, Argentina",
+                        "autor": "Amela, Franco Andrés",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2025,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Evaluación de riesgos naturales para planificación urbana y obras de mitigación.",
+                        "lat": -42.1,
+                        "lng": -71.6,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13287",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 13,
+                        "titulo": "Análisis de la dinámica costera en la región de las Grutas, provincia de Río Negro",
+                        "autor": "Sbaizero, Lautaro Adrián",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2025,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Gestión costera y evaluación de riesgos de erosión para infraestructura turística.",
+                        "lat": -40.8,
+                        "lng": -65.1,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13284",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 14,
+                        "titulo": "Geología del sector medio de la quebrada de Hualcupén, complejo volcánico Caviahue-Copahue, provincia de Río Negro",
+                        "autor": "López, Florencia Natali",
+                        "director": "Báez, Alejandro David",
+                        "anio": 2025,
+                        "area": "petrologia",
+                        "aplicabilidad": "Caracterización de peligros volcánicos y evaluación del potencial geotérmico.",
+                        "lat": -37.85,
+                        "lng": -71.1,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13014",
+                        "codirector": "Caselli, Alberto Tomás",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 15,
+                        "titulo": "Micropalentología de las sedimentitas en el contacto entre las formaciones Anacleto y Allen (área natural protegida Paso Córdoba, Río Negro): Indiferencias paleoambientales",
+                        "autor": "Gigli, Ayelén",
+                        "director": "Caratelli, Martina",
+                        "anio": 2025,
+                        "area": "paleontologia",
+                        "aplicabilidad": "Análisis bioestratigráfico y paleoambiental para correlación regional de secuencias sedimentarias.",
+                        "lat": -39.03,
+                        "lng": -67.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/13005",
+                        "codirector": "Archuby, Fernando Miguel",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 16,
+                        "titulo": "Caracterización Estática de la Formación Centenario en el Yacimiento Estación Fernández Oro, provincia de Río Negro, Argentina",
+                        "autor": "Maydana, Facundo Emanuel",
+                        "director": "Álvarez, Gastón Hugo",
+                        "anio": 2025,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Modelado estático de reservorios para optimización de la producción de hidrocarburos.",
+                        "lat": -38.95,
+                        "lng": -67.92,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/12930",
+                        "codirector": "Montagna, Aldo Omar",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 17,
+                        "titulo": "Análisis petrográfico y geoquímico de las unidades magmáticas del Volcán Auca Mahuida, Provincia del Neuquén, Argentina",
+                        "autor": "Mora, Roberto Patricio",
+                        "director": "Serra Varela, Samanta",
+                        "anio": 2025,
+                        "area": "geoquimica",
+                        "aplicabilidad": "Análisis de datos geoquímicos, petrológicos y perfiles de pozos con el fin de entender la estructura subvolcánica del yacimiento Auca Mahuida.",
+                        "lat": -37.741103,
+                        "lng": -68.899172,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/12929",
+                        "codirector": "Tellería, Mauro",
+                        "fuenteCodirector": "Corrección informada por equipo docente/director; pendiente de contraste con RID",
+                        "aportes": ["Energía y transición energética"]
+            },
+            {
+                        "id": 18,
+                        "titulo": "Estudio sobre las posibilidades de almacenaje de CO2 en depósitos clásticos de la región noroeste de la cuenca Neuquina",
+                        "autor": "Rey Monti, Facundo Mariano",
+                        "director": "Cardozo, Joaquín",
+                        "anio": 2025,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Evaluación de sitios de secuestro geológico de CO2 para mitigación del cambio climático.",
+                        "lat": -37.5,
+                        "lng": -70.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/12928",
+                        "codirector": "Tunik, Maisa Andrea",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 19,
+                        "titulo": "Caracterización geológica, estructural y de las alteraciones de las vetas del torreón, Andacollo, Neuquen",
+                        "autor": "Flores, Ariadna Lorena",
+                        "director": "Pons, María Josefina",
+                        "anio": 2025,
+                        "area": "metalogenesis",
+                        "aplicabilidad": "Exploración de Au-Ag en sistemas epitermales del distrito Andacollo.",
+                        "lat": -37.2,
+                        "lng": -70.7,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/12601",
+                        "codirector": "Dicaro, Sebastián",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 20,
+                        "titulo": "Determinación de los blancos de exploración en base a la respuesta espectral de los minerales de alteración hidrotermal en los alrededores del Establecimiento Ganadero Don Raúl, Macizo Nordpatagónico, Patagonia Argentina",
+                        "autor": "Pessoa García, Marcos Yoel",
+                        "director": "Gonzalez, Santiago Nicolás",
+                        "anio": 2024,
+                        "area": "metalogenesis",
+                        "aplicabilidad": "Teledetección aplicada a exploración mineral y generación de blancos de perforación.",
+                        "lat": -41.7,
+                        "lng": -67.7,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/12199",
+                        "codirector": "Greco, Gerson Alan",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 21,
+                        "titulo": "Caracterización estratigráfica del Complejo Volcánico Marifil (Jurásico Inferior) al sudeste de Valcheta, provincia de Río Negro",
+                        "autor": "Schiappa Pietra, María Belén",
+                        "director": "Citton, Paolo",
+                        "anio": 2024,
+                        "area": "petrologia",
+                        "aplicabilidad": "Correlación estratigráfica regional y estudios de evolución magmática.",
+                        "lat": -40.7,
+                        "lng": -66.2,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/12186",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 22,
+                        "titulo": "Escenarios futuros de inundaciones sobre la costa de la Bahía San Antonio, Río Negro, Argentina. A partir de modelados por el efecto del aumento del nivel del mar",
+                        "autor": "Fernandez Luengo, Valentina Aldana",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2024,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Modelado de riesgos costeros para planificación urbana y adaptación al cambio climático.",
+                        "lat": -40.7,
+                        "lng": -64.9,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/11556",
+                        "codirector": "Paredes Bartolomé, Carlos",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 23,
+                        "titulo": "Análisis sedimentológico del miembro Pilmatué, formación Agrio, en el área del anticlinal El Churqui",
+                        "autor": "Leal, Daniela",
+                        "director": "Gómez, Ricardo",
+                        "anio": 2024,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Caracterización de reservorios carbonáticos y mixtos para exploración de hidrocarburos.",
+                        "lat": -37.8,
+                        "lng": -70.3,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/11465",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 24,
+                        "titulo": "Modelo estadístico de la formación lajas (jurásico medio) en el yacimiento Aguada Toledo - Sierra Barrosa, provincia de Neuquén",
+                        "autor": "Mussi Saluj, Diego Omar",
+                        "director": "Casado, Horacio Eduardo",
+                        "anio": 2024,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Modelado geoestadístico de reservorios para predicción de propiedades petrofísicas.",
+                        "lat": -38.2,
+                        "lng": -69.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/11462",
+                        "codirector": "Montagna, Aldo Omar",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 25,
+                        "titulo": "Análisis petrográfico y por Sem-Eds de la mineralización secundaria de uranio en el basamento del depósito Ivana (U-V), macizo Nordapatagonico, Río Negro",
+                        "autor": "Andrenacci, Bruno",
+                        "director": "Gonzalez, Pablo Diego",
+                        "anio": 2023,
+                        "area": "metalogenesis",
+                        "aplicabilidad": "Exploración de uranio para energía nuclear y caracterización mineralógica.",
+                        "lat": -41.0,
+                        "lng": -67.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/11145",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 26,
+                        "titulo": "Estudio del patrimonio geológico y paleontológico en cañadon escondido, cretácico superior de la cuenca neuquina: aportes para el geoturismo",
+                        "autor": "Ríos, Florencia Macarena",
+                        "director": "Mastrocola, Yusara Isis",
+                        "anio": 2023,
+                        "area": "paleontologia",
+                        "aplicabilidad": "Desarrollo de geoturismo científico y conservación del patrimonio paleontológico.",
+                        "lat": -39.5,
+                        "lng": -68.0,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/11043",
+                        "codirector": "Canale, Juan Ignacio",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 27,
+                        "titulo": "Estudio y aplicación de criterios de discriminación de granitos con datos ASTER, LANDSAT 8 y SENTINEL 2A, precordillera patagónica",
+                        "autor": "Gaspar, Elisa",
+                        "director": "Cabana, Maria Cecilia",
+                        "anio": 2023,
+                        "area": "petrologia",
+                        "aplicabilidad": "Teledetección aplicada a cartografía geológica y exploración mineral.",
+                        "lat": -41.0,
+                        "lng": -71.0,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/10341",
+                        "codirector": "Zaffarana, Claudia Beatriz",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 28,
+                        "titulo": "Análisis estructural de rocas del Complejo Volcánico Marifil en los alrededores del establecimiento Don Raúl, sureste de Valcheta, Río Negro",
+                        "autor": "Wiejski López, Martina",
+                        "director": "Greco, Gerson Alan",
+                        "anio": 2023,
+                        "area": "tectonica",
+                        "aplicabilidad": "Análisis de deformación regional para exploración mineral y estudios de evolución tectónica.",
+                        "lat": -40.7,
+                        "lng": -66.2,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/10312",
+                        "codirector": "González, Santiago Nicolás",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 29,
+                        "titulo": "Historia de exhumación de la granodiorita Huingancó, cordillera del viento, provincia de Neuquén",
+                        "autor": "Aguilar Caceres, Camila Delfina",
+                        "director": "Orts, Dario Leandro",
+                        "anio": 2023,
+                        "area": "tectonica",
+                        "aplicabilidad": "Reconstrucción tectónica para exploración de yacimientos asociados a intrusivos.",
+                        "lat": -37.2,
+                        "lng": -70.8,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/10271",
+                        "codirector": "Zaffarana, Claudia Beatriz",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 30,
+                        "titulo": "Estudio geológico estructural del basamento metamórfico - ígneo en el cañadón Chacay Huarruca, Macizo Nordpatagónico Occidental, Río Negro",
+                        "autor": "Colipán Eduards, Esteban Emanuel",
+                        "director": "González, Pablo Diego",
+                        "anio": 2023,
+                        "area": "tectonica",
+                        "aplicabilidad": "Análisis estructural para exploración de mineralizaciones en el basamento patagónico.",
+                        "lat": -41.5,
+                        "lng": -70.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/12836",
+                        "codirector": "Cabana, María Cecilia",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 71,
+                        "titulo": "Niveles yesíferos de la Formación Sarmiento en el valle inferior del Río Chubut",
+                        "autor": "Arcenio, Elías Mario",
+                        "director": "Krause, J. Marcelo",
+                        "anio": 2023,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Caracterización de niveles yesíferos y depósitos evaporíticos de la Formación Sarmiento; aporte al conocimiento estratigráfico regional y a la evaluación de recursos minerales no metalíferos.",
+                        "lat": -43.366333,
+                        "lng": -65.674750,
+                        "ridUrl": "",
+                        "estadoCodirector": "No informado; pendiente de contraste con RID u otra fuente institucional"
+            },
+            {
+                        "id": 31,
+                        "titulo": "Análisis de los procesos de transporte y depositación de fragmentos pumíceos en un sistema fluvial: el caso de la Formación El Palo entre las localidades de General Roca y Villa Regina (Río Negro)",
+                        "autor": "Peñacorada, Lucas",
+                        "director": "Gómez, Ricardo Ernesto",
+                        "anio": 2022,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis de procesos volcaniclásticos y fluviales para reconstrucción paleoambiental y evaluación de fuentes sedimentarias.",
+                        "lat": -39.0,
+                        "lng": -67.6,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/9537",
+                        "codirector": "Tunik, Maisa Andrea",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 32,
+                        "titulo": "Caracterización geomorfológica y aplicación del índice hidrogeomorfológico (IHG) en el Alto Valle del Río Negro",
+                        "autor": "Díaz Presas, Sofía",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2022,
+                        "area": "hidrogeologia",
+                        "aplicabilidad": "Gestión de recursos hídricos y evaluación de riesgos de inundación en zonas agrícolas y urbanas.",
+                        "lat": -39.0,
+                        "lng": -67.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8832",
+                        "codirector": "Macchi, Pablo",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 33,
+                        "titulo": "Petrografía, geoquímica y edad del complejo volcánico Anecón grande, Paleoceno del macizo norpatagónico",
+                        "autor": "Paileman, Luciana",
+                        "director": "Zaffarana, Claudia Beatriz",
+                        "anio": 2022,
+                        "area": "petrologia",
+                        "aplicabilidad": "Caracterización petrogenética y geocronológica para reconstrucción magmática.",
+                        "lat": -41.5,
+                        "lng": -69.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8668",
+                        "codirector": "Falco, Juan I.",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 34,
+                        "titulo": "Análisis de huellas avianas del Cretácico Superior del Cañadón del Laberinto (Valle de la Luna Amarillo, Paso Córdoba, Río Negro, Argentina)",
+                        "autor": "Urzagasti Torres, Sofía",
+                        "director": "Díaz Martínez, Ignacio",
+                        "anio": 2022,
+                        "area": "paleontologia",
+                        "aplicabilidad": "Estudio icnológico para reconstrucción paleoambiental y valoración del patrimonio paleontológico local.",
+                        "lat": -39.03,
+                        "lng": -67.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8646",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 35,
+                        "titulo": "Análisis petrográfico y procedencia de las areniscas líticas glauconíticas de la Formación Magallanes inferior en el sector central de la cuenca austral, sur de Santa Cruz",
+                        "autor": "Vittore, Stefanía",
+                        "director": "Tunik, Maisa",
+                        "anio": 2021,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis de proveniencia para exploración de hidrocarburos en la Cuenca Austral.",
+                        "lat": -51.5,
+                        "lng": -72.0,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8649",
+                        "codirector": "Omarini, Julieta",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 36,
+                        "titulo": "Caracterización geológica de domos subvolcánicos riolíticos en el Compejo Los Menucos (Permo-Triásico), Macizo Norpatagónico, Río Negro",
+                        "autor": "Sobol, Marco",
+                        "director": "González, Pablo Diego",
+                        "anio": 2021,
+                        "area": "petrologia",
+                        "aplicabilidad": "Caracterización de intrusivos someros para exploración mineral.",
+                        "lat": -40.8,
+                        "lng": -68.0,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8393",
+                        "codirector": "Vera, Darío Rubén",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 37,
+                        "titulo": "Análisis mineralógico-texural y composicional de alteraciones en granitoides mediante técnicas petrologicas y de procesamiento de imágens satelitales Aster del sector oriental del complejo plutónico volcánico Curacó, Río Negro",
+                        "autor": "Cuevas Zurita, Tomás Ignacio",
+                        "director": "González, Pablo Diego",
+                        "anio": 2021,
+                        "area": "metalogenesis",
+                        "aplicabilidad": "Teledetección aplicada a exploración mineral y cartografía de alteraciones.",
+                        "lat": -41.3,
+                        "lng": -68.8,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8392",
+                        "codirector": "Cabana, María Cecilia",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 38,
+                        "titulo": "Análisis petrográfico de las formaciones Chichinales y El Palo en las localidades de Paso Còrdoba y Villa Regina",
+                        "autor": "Delgado Kasinsky, Estefanía Jael",
+                        "director": "Tunik, Maisa Andrea",
+                        "anio": 2021,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Caracterización petrofísica y sedimentológica de unidades continentales para gestión de recursos hídricos y correlación regional.",
+                        "lat": -39.0,
+                        "lng": -67.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8390",
+                        "codirector": "Pino, Diego Alejandro",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 39,
+                        "titulo": "Fábrica magnética y petrología del complejo volcánico-plutónico Huingancó, pérmico de la Cordillera del Viento, Andes neuquinos",
+                        "autor": "Pernich, Sebastián",
+                        "director": "Zaffarana, Claudia",
+                        "anio": 2021,
+                        "area": "petrologia",
+                        "aplicabilidad": "Análisis petrológico y de fábrica magnética para reconstrucción tectonomagmática regional.",
+                        "lat": -37.2,
+                        "lng": -70.8,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/7907",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 40,
+                        "titulo": "Análisis sedimentológico e icnológico en la corona ECO-5 de la formación Magallanes inferior (Cretácico superior - Eoceno inferior), Cuenca Austral",
+                        "autor": "Vazquez, Karen Verónica",
+                        "director": "Ponce, Juan José",
+                        "anio": 2021,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis de testigos corona para interpretación paleoambiental y caracterización de reservorios.",
+                        "lat": -51.5,
+                        "lng": -72.0,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/7503",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 41,
+                        "titulo": "Identificación, caracterización y mapeo de depósitos conglomerádicos dentro de la Sección Inferior de la Formación Lajas, a través de perfiles de imágenes en el Yacimiento Estación Fernández Oro (EFO)",
+                        "autor": "Castillo, Valeria Leonor",
+                        "director": "Potás, Gustavo",
+                        "anio": 2021,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Caracterización de depósitos conglomerádicos mediante datos de subsuelo para modelado de reservorios.",
+                        "lat": -38.95,
+                        "lng": -67.92,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/7246",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 42,
+                        "titulo": "Caracterización y mapa de estados erosivos de la cuenca aluvional Roca, General Roca, provincia de Río Negro, Argentina",
+                        "autor": "Aranda, Denis Antonel",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2021,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Cartografía de procesos erosivos para gestión del territorio y prevención de riesgos geológicos.",
+                        "lat": -39.03,
+                        "lng": -67.58,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/7063",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 43,
+                        "titulo": "Análisis del territorio fluvial, el caudal ecológico y el riesgo asociado a la dinámica del rio Negro en General Roca y alrededores",
+                        "autor": "Martínez, Enzo",
+                        "director": "Orts, Darío",
+                        "anio": 2021,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Evaluación del territorio fluvial y del riesgo asociado para planificación urbana y gestión ambiental.",
+                        "lat": -39.03,
+                        "lng": -67.58,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/6945",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 44,
+                        "titulo": "Caracterización estática de la Formación Lajas a partir de la integración de datos de roca, perfiles eléctricos de pozo y datos de producción, en el yacimiento Barrosa Norte, cuenca Neuquina",
+                        "autor": "Guevara, Marcelo Antonio",
+                        "director": "Coppo Carmona, Noelia Romina",
+                        "anio": 2020,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Integración de datos de roca, perfiles y producción para caracterización de reservorios tight.",
+                        "lat": -38.3,
+                        "lng": -69.2,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/6760",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 45,
+                        "titulo": "Análisis de la dinámica y evolución costera en la región de la localidad La Lobería, Río Negro",
+                        "autor": "Barion, Gerardo Esteban",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2020,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Gestión costera y evaluación de riesgo geológico en áreas turísticas y urbanas.",
+                        "lat": -41.15,
+                        "lng": -63.1,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/6748",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 46,
+                        "titulo": "Caracterización estratigráfica del grupo Neuquén en la zona este del yacimiento Estación Fernández Oro (EFO): Identificación de los principales niveles sello dentro de dicha unidad",
+                        "autor": "Azar, Gonzalo Gaspar",
+                        "director": "Otalora Ardila, Nayibe",
+                        "anio": 2020,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Caracterización de niveles sello con datos de subsuelo para protección de acuíferos y gestión hidrocarburífera.",
+                        "lat": -38.95,
+                        "lng": -67.92,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/6738",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 47,
+                        "titulo": "Estratigrafía y petrografía de los depósitos volcanoclásticos del Complejo volcánico Domuyo, noroeste neuquino",
+                        "autor": "Dirr, Sebastián",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2020,
+                        "area": "petrologia",
+                        "aplicabilidad": "Caracterización volcaniclástica y estratigráfica para reconstrucción de la evolución volcánica regional.",
+                        "lat": -36.65,
+                        "lng": -70.4,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/6722",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 48,
+                        "titulo": "Geomorfología y dinámica del Río Quemquemtreu en el sector de El Bolsón, provincia de Río Negro",
+                        "autor": "Muñiz Fredes, Rocío Belén",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2020,
+                        "area": "hidrogeologia",
+                        "aplicabilidad": "Análisis geomorfológico e hidrológico para evaluación de dinámica fluvial y riesgo de inundación.",
+                        "lat": -41.96,
+                        "lng": -71.53,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/6693",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 49,
+                        "titulo": "Análisis sedimentológico e icnológico de testigos corona de la formación Loma Montosa, Catriel Oeste - Cuenca Neuquina",
+                        "autor": "Donat Lastra, Cristian Michel",
+                        "director": "Ponce, Juan José",
+                        "anio": 2020,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis de testigos corona para caracterización de facies y modelado de sistemas deltaicos de subsuelo.",
+                        "lat": -37.9,
+                        "lng": -67.8,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/6692",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 50,
+                        "titulo": "Geología y metamorfismo del basamento Ígneo-Metamórfico del arroyo Cochicó Grande en el paraje Kilka, Precordillera Neuquina Sur",
+                        "autor": "García, Claudio J.",
+                        "director": "González, Pablo D.",
+                        "anio": 2020,
+                        "area": "petrologia",
+                        "aplicabilidad": "Caracterización del basamento ígneo-metamórfico para reconstrucción geológica regional.",
+                        "lat": -39.2,
+                        "lng": -70.6,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/5095",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 51,
+                        "titulo": "Controles estructurales y magmáticos en reservorios de la Formación Mulichinco en el yacimiento Volcán Auca Mahuida, Provincia de Neuquén, Argentina",
+                        "autor": "Chiacchiera Lobos, Sabina Antonella",
+                        "director": "Ribas, Soledad",
+                        "anio": 2019,
+                        "area": "tectonica",
+                        "aplicabilidad": "Análisis de controles estructurales y magmáticos sobre reservorios hidrocarburíferos.",
+                        "lat": -37.741103,
+                        "lng": -68.899172,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/4381",
+                        "codirector": "Orts, Darío",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 52,
+                        "titulo": "Análisis sedimentológico e icnológico de la sección basal de la formación Picún Leufú (Tithoniano-Berriasiano) en su localidad tipo, Cuenca neuquina, Argentina",
+                        "autor": "Parada, Martín N.",
+                        "director": "Ponce, Juan José",
+                        "anio": 2019,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis sedimentológico e icnológico para mejorar modelos depositacionales de unidades del sistema petrolero neuquino.",
+                        "lat": -39.5,
+                        "lng": -69.3,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/4089",
+                        "codirector": "Canale, Nerina",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 53,
+                        "titulo": "Caracterización estratigráfica del Grupo Neuquén en el Sector Oeste del Yacimiento Estación Fernández Oro (EFO): definición de los principales niveles sellos a través de datos de subsuelo",
+                        "autor": "Cáceres, Jorge Gastón",
+                        "director": "García, María E.",
+                        "anio": 2019,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Evaluación de niveles sello del Grupo Neuquén mediante datos de subsuelo para protección de acuíferos.",
+                        "lat": -38.95,
+                        "lng": -67.92,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/3400",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 54,
+                        "titulo": "Caracterización geoquímica y mineralógica de la sección 5303350 del depósito epitermal Loma de la Plata, Proyecto Navidad, Chubut, Argentina",
+                        "autor": "Mercado, Maximiliano M.",
+                        "director": "Pons, María J.",
+                        "anio": 2019,
+                        "area": "metalogenesis",
+                        "aplicabilidad": "Caracterización mineralógica y geoquímica de depósitos epitermales para exploración de metales preciosos.",
+                        "lat": -42.03,
+                        "lng": -68.13,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/3141",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 55,
+                        "titulo": "Análisis composicional y de procedencia de las unidades sedimentarias del Eoceno medio hasta Mioceno temprano de la cuenca austral, aflorantes al sur del Lago Argentino, Provincia de Santa Cruz",
+                        "autor": "Soto, Christian N.",
+                        "director": "Tunik, Maisa Andrea",
+                        "anio": 2019,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis de procedencia para reconstrucción de la evolución sedimentaria y tectónica de la Cuenca Austral.",
+                        "lat": -50.5,
+                        "lng": -72.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/2471",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 56,
+                        "titulo": "Análisis sedimentológico y petrográfico de la transición entre el grupo Bajada del Agrio y la formación diamante en el sector norte de la cuenca neuquina, sur de Mendoza",
+                        "autor": "Lothari Inaudi, Lucas D.",
+                        "director": "Tunik, Maisa",
+                        "anio": 2019,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis de facies y procedencia para reconstrucción paleogeográfica y evaluación de reservorios.",
+                        "lat": -35.8,
+                        "lng": -69.8,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/2255",
+                        "codirector": "Gómez, Ricardo",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 57,
+                        "titulo": "Petrografía y fábrica magnética de la granodiorita varvarco y plutones asociados, cretácico tardío-paleoceno de los Andes neuquinos",
+                        "autor": "Assis, Omar Sebastián",
+                        "director": "Zaffarana, Claudia Beatriz",
+                        "anio": 2019,
+                        "area": "petrologia",
+                        "aplicabilidad": "Caracterización petrológica y magnética de plutones para reconstrucción tectonomagmática andina.",
+                        "lat": -36.8,
+                        "lng": -70.7,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/2256",
+                        "codirector": "Orts, Darío Leandro",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 58,
+                        "titulo": "Análisis sismoestratigráfico y estructural del bloque Estación Fernández Oro, cuenca neuquina, provincia de Río Negro",
+                        "autor": "Roberts González, Juan A.",
+                        "director": "Claa, Rodrigo A.",
+                        "anio": 2018,
+                        "area": "tectonica",
+                        "aplicabilidad": "Interpretación sísmica y estructural aplicada a la caracterización del subsuelo hidrocarburífero.",
+                        "lat": -38.95,
+                        "lng": -67.92,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/2254",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 59,
+                        "titulo": "Dinámica costera y bases para el ordenamiento territorial en el Balneario Bahía Creek, Provinca de Río Negro",
+                        "autor": "Toffani, Mauricio",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2018,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Estudio de dinámica costera para ordenamiento territorial y reducción del riesgo geológico.",
+                        "lat": -41.05,
+                        "lng": -63.9,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/2253",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 60,
+                        "titulo": "Caracterización química e isotópica de los fluidos hidrotermales alrededor del volcán Copahue (Andes del sur) en el período 2016-2018: análisis de variaciones en el tiempo",
+                        "autor": "Pereira da Silva, Sara María",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2018,
+                        "area": "geoquimica",
+                        "aplicabilidad": "Monitoreo de actividad volcánica y evaluación del potencial geotérmico.",
+                        "lat": -37.85,
+                        "lng": -71.1,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8097",
+                        "codirector": "Presa, Jimena Mailen",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 61,
+                        "titulo": "Evaluación hidroquímica de los niveles acuíferos del Grupo Neuquén, en área de yacimientos hidrocarburíferos de la Provincia de Río Negro",
+                        "autor": "Garrido, Mariana Elizabeth",
+                        "director": "Melo, Marisol",
+                        "anio": 2017,
+                        "area": "hidrogeologia",
+                        "aplicabilidad": "Evaluación de impactos de actividad petrolera en recursos hídricos subterráneos.",
+                        "lat": -38.8,
+                        "lng": -68.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8548",
+                        "codirector": "Hernández, Viviana",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 62,
+                        "titulo": "Estructuras sedimentarias inducidas por actividad microbiana en la formación Los Molles (Jurásico temprano - medio), Cordillera del Viento, Neuquén, Argentina: implicancias geoquímicas y paleoambientales",
+                        "autor": "Andrade, Patricio Agustín",
+                        "director": "Ponce, Juan José",
+                        "anio": 2017,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis de facies, geoquímica y paleoambientes en unidades del sistema petrolero neuquino.",
+                        "lat": -37.0,
+                        "lng": -70.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8112",
+                        "codirector": "Tunik, Maisa Andrea",
+                        "fuenteCodirector": "RID — registro Dublin Core completo (dc.contributor)"
+            },
+            {
+                        "id": 63,
+                        "titulo": "Caracterización del Miembro Pilmatué de la Formación Agrio como reservorio no convencional de tipo shale",
+                        "autor": "Voglino, Sergio",
+                        "director": "Tunik, Maisa A.",
+                        "anio": 2017,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Caracterización geoquímica, mineralógica y petrofísica de un reservorio no convencional tipo shale.",
+                        "lat": -37.3,
+                        "lng": -70.25,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/8071",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 64,
+                        "titulo": "Evaluación de la susceptibilidad a procesos de remoción en masa en los alrededores de los lagos Mascardi y Guillelmo, Parque Nacional Nahuel Huapi, Río Negro",
+                        "autor": "Mizerit, Ignacio",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2017,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Evaluación de susceptibilidad a remoción en masa para gestión de riesgos en áreas protegidas.",
+                        "lat": -41.4,
+                        "lng": -71.5,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/1469",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 65,
+                        "titulo": "Metamorfismo de soterramiento en la cuenca neuquina e implicancias en la maduración térmica de los hidrocarburos",
+                        "autor": "Suárez, Rodrigo Javier",
+                        "director": "González, Pablo Diego",
+                        "anio": 2016,
+                        "area": "petrologia",
+                        "aplicabilidad": "Análisis del metamorfismo de soterramiento y su relación con la maduración térmica de hidrocarburos.",
+                        "lat": -38.5,
+                        "lng": -69.0,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/529",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 66,
+                        "titulo": "Dinámica costera y análisis del riesgo geológico asociado en la desembocadura del Río Negro, Provincias de Buenos Aires y Río Negro",
+                        "autor": "Vergara Dal Pont, Iván P.",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2015,
+                        "area": "geotecnia",
+                        "aplicabilidad": "Análisis de dinámica costera y riesgo geológico para gestión territorial en la desembocadura del río Negro.",
+                        "lat": -41.0,
+                        "lng": -62.85,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/534",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 67,
+                        "titulo": "Análisis estratigráfico y estructural del cubo sísmico CNQ32, Cuenca neuquina, Provincia de Río Negro",
+                        "autor": "Pino, Diego Alejandro",
+                        "director": "García, Víctor Hugo",
+                        "anio": 2015,
+                        "area": "tectonica",
+                        "aplicabilidad": "Interpretación sísmica y estructural para caracterización del subsuelo de la Cuenca Neuquina.",
+                        "lat": -38.6,
+                        "lng": -68.2,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/531",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 68,
+                        "titulo": "Estudio de los depósitos post-glaciares del volcán Copahue: análisis de la peligrosidad",
+                        "autor": "Baez, Alejandro D.",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2015,
+                        "area": "petrologia",
+                        "aplicabilidad": "Caracterización de depósitos volcánicos postglaciares para análisis de peligrosidad volcánica.",
+                        "lat": -37.85,
+                        "lng": -71.1,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/532",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 69,
+                        "titulo": "Relación entre la mineralización de Cu y bitumen en el prospecto La cuprosa, dorsal de Huincul, Neuquén",
+                        "autor": "Paz, Maximiliano",
+                        "director": "Pons, María J.",
+                        "anio": 2015,
+                        "area": "metalogenesis",
+                        "aplicabilidad": "Estudio de mineralización de cobre y bitumen con aplicación a exploración mineral y sistemas petroleros.",
+                        "lat": -38.9,
+                        "lng": -68.8,
+                        "ridUrl": "https://rid.unrn.edu.ar/handle/20.500.12049/3140",
+                        "estadoCodirector": "No informado en RID; pendiente de contraste con @unrngeo u otra fuente pública"
+            },
+            {
+                        "id": 71,
+                        "titulo": "Análisis sedimentológico, icnológico y paleobiológico de la Formación Candelera (Cretácico Superior) de la Cuenca Neuquina en el área del Cañadón Escondido",
+                        "autor": "Pichiman, Alexandra Vanina",
+                        "director": "Carmona, Noelia B.",
+                        "codirector": "Ponce, Juan José",
+                        "anio": 2026,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Reconstrucción paleoambiental e icnológica de unidades cretácicas de la Cuenca Neuquina; insumo para correlación estratigráfica y conocimiento geológico regional.",
+                        "lat": -39.5,
+                        "lng": -68.5,
+                        "ridUrl": "",
+                        "fuenteCodirector": "@unrngeo — anuncio público de defensa; pendiente de contraste con RID cuando esté disponible"
+            },
+            {
+                        "id": 72,
+                        "titulo": "Petrografía y procedencia de la Formación Río Leona (Oligoceno-Mioceno), en el suroeste de Santa Cruz, Argentina",
+                        "autor": "Alarcon Paredes, Enzo Adrian",
+                        "director": "Tunik, Maisa Andrea",
+                        "codirector": "Gómez, Ricardo",
+                        "anio": 2026,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis petrográfico y de procedencia de unidades oligoceno-miocenas del suroeste de Santa Cruz; contribución al conocimiento de la evolución sedimentaria y tectónica de la Cuenca Austral.",
+                        "lat": -51.5,
+                        "lng": -72.0,
+                        "ridUrl": "",
+                        "fuenteCodirector": "@unrngeo — anuncio público de defensa; pendiente de contraste con RID cuando esté disponible"
+            },
+            {
+                        "id": 73,
+                        "titulo": "Petrografía y procedencia de la Formación La Golondrina (Pérmico), Provincia de Santa Cruz, Argentina",
+                        "autor": "Silveira, Daniela Alejandra",
+                        "director": "Cariglino, Bárbara",
+                        "codirector": "Tunik, Maisa Andrea",
+                        "anio": 2026,
+                        "area": "sedimentologia",
+                        "aplicabilidad": "Análisis petrográfico y de procedencia de unidades pérmicas del Macizo del Deseado; contribución al conocimiento de las fuentes de sedimento y la evolución paleogeográfica del sur de Argentina.",
+                        "lat": -48.5,
+                        "lng": -68.5,
+                        "ridUrl": "",
+                        "fuenteCodirector": "@unrngeo — anuncio público de defensa; pendiente de contraste con RID cuando esté disponible"
+            },
+            {
+                        "id": 74,
+                        "titulo": "Descripción geológica del sector occidental del Batolito Curaco, Triásico Superior-Jurásico Inferior, Macizo Nordpatagónico, Río Negro",
+                        "autor": "Mungai, Melina Belén",
+                        "director": "Cabana, María Cecilia",
+                        "codirector": "González, Pablo Diego",
+                        "anio": 2026,
+                        "area": "petrologia",
+                        "aplicabilidad": "Descripción y cartografía geológica de unidades ígneas del Macizo Nordpatagónico; insumo para estudios de basamento regional y exploración de recursos.",
+                        "lat": -41.5,
+                        "lng": -66.5,
+                        "ridUrl": "",
+                        "fuenteCodirector": "@unrngeo — anuncio público de defensa; pendiente de contraste con RID cuando esté disponible"
+            },
+            {
+                        "id": 75,
+                        "titulo": "Geología del sector sur de la Caldera del Agrio, Neuquén, Argentina",
+                        "autor": "Sosa, Tomás Mauricio D.",
+                        "director": "Caselli, Alberto Tomás",
+                        "anio": 2026,
+                        "area": "petrologia",
+                        "aplicabilidad": "Caracterización geológica y volcanológica del sector sur de la Caldera del Agrio con implicancias en la evaluación de peligros volcánicos y el potencial geotérmico.",
+                        "lat": -37.85,
+                        "lng": -71.1,
+                        "ridUrl": "",
+                        "fuenteCodirector": "@unrngeo — anuncio público de defensa; pendiente de contraste con RID cuando esté disponible"
+            }
+];
+
+        // Ordenar por año descendente, luego alfabéticamente por autor
+        trabajos.sort((a, b) => b.anio - a.anio || a.autor.localeCompare(b.autor));
+
+        // FUNCIONES AUXILIARES
+        function getColorByArea(area) {
+            const colors = {
+                sedimentologia: '#1D9E75',
+                paleontologia: '#378ADD',
+                tectonica: '#D85A30',
+                geoquimica: '#D4537E',
+                metalogenesis: '#7A57C7',
+                hidrogeologia: '#639922',
+                geotecnia: '#BA7517',
+                petrologia: '#888780'
+            };
+            return colors[area] || '#888780';
+        }
+
+        function getAreaLabel(area) {
+            const labels = {
+                sedimentologia: 'Sedimentología',
+                paleontologia: 'Paleontología',
+                tectonica: 'Tectónica',
+                geoquimica: 'Geoquímica',
+                metalogenesis: 'Metalogénesis',
+                hidrogeologia: 'Hidrogeología',
+                geotecnia: 'Geotecnia',
+                petrologia: 'Petrología'
+            };
+            return labels[area] || area;
+        }
+
+        // MAPA
+        let map = L.map('map').setView([-40.0, -68.5], 6);
+        
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri',
+            maxZoom: 18
+        }).addTo(map);
+        
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '',
+            maxZoom: 18
+        }).addTo(map);
+
+        let markers = [];
+        let currentFilters = { buscar: '', area: '', aporte: '', anio: '' };
+
+        function normalizeText(value) {
+            return (value || '')
+                .toString()
+                .normalize('NFD')
+                .replace(/[̀-ͯ]/g, '')
+                .toLowerCase();
+        }
+
+        function filterTrabajos() {
+            return trabajos.filter(trabajo => {
+                let match = true;
+                
+                if (currentFilters.buscar) {
+                    const search = normalizeText(currentFilters.buscar);
+                    const aporteTexto = normalizeText(getAporteCategorias(trabajo).join(' '));
+                    match = match && (
+                        normalizeText(trabajo.titulo).includes(search) ||
+                        normalizeText(trabajo.autor).includes(search) ||
+                        normalizeText(trabajo.director).includes(search) ||
+                        (trabajo.codirector && normalizeText(trabajo.codirector).includes(search)) ||
+                        (trabajo.aplicabilidad && normalizeText(trabajo.aplicabilidad).includes(search)) ||
+                        aporteTexto.includes(search)
+                    );
+                }
+                
+                if (currentFilters.area) {
+                    match = match && trabajo.area === currentFilters.area;
+                }
+                
+                if (currentFilters.aporte) {
+                    match = match && getAporteCategorias(trabajo).includes(currentFilters.aporte);
+                }
+                
+                if (currentFilters.anio) {
+                    match = match && trabajo.anio.toString() === currentFilters.anio;
+                }
+                
+                return match;
+            });
+        }
+
+        function renderMap() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            const filtered = filterTrabajos();
+            let contadorMarcadores = 0;
+            const coordGroups = {};
+
+            filtered.forEach(trabajo => {
+                if (trabajo.lat && trabajo.lng) {
+                    const key = `${trabajo.lat},${trabajo.lng}`;
+                    if (!coordGroups[key]) coordGroups[key] = [];
+                    coordGroups[key].push(trabajo);
+                }
+            });
+
+            filtered.forEach(trabajo => {
+                if (trabajo.lat && trabajo.lng) {
+                    const key = `${trabajo.lat},${trabajo.lng}`;
+                    const group = coordGroups[key] || [trabajo];
+                    const index = group.findIndex(t => t.id === trabajo.id);
+                    let markerLat = trabajo.lat;
+                    let markerLng = trabajo.lng;
+
+                    if (group.length > 1) {
+                        // Separación visual moderada de marcadores con coordenadas idénticas.
+                        // La ubicación real se conserva en trabajo.lat/trabajo.lng; solo se desplaza levemente el punto dibujado.
+                        const basePoint = map.project([trabajo.lat, trabajo.lng], map.getZoom());
+
+                        if (group.length === 2) {
+                            // Mantener el primer trabajo exactamente en la coordenada real
+                            // y desplazar apenas el segundo para que se note que hay dos registros.
+                            if (index === 1) {
+                                const offsetPoint = basePoint.add(L.point(10, -6));
+                                const offsetLatLng = map.unproject(offsetPoint, map.getZoom());
+                                markerLat = offsetLatLng.lat;
+                                markerLng = offsetLatLng.lng;
+                            }
+                        } else {
+                            const angle = (2 * Math.PI * index) / group.length;
+                            const pixelOffset = 12;
+                            const offsetPoint = basePoint.add(L.point(
+                                Math.cos(angle) * pixelOffset,
+                                Math.sin(angle) * pixelOffset
+                            ));
+                            const offsetLatLng = map.unproject(offsetPoint, map.getZoom());
+                            markerLat = offsetLatLng.lat;
+                            markerLng = offsetLatLng.lng;
+                        }
+                    }
+
+                    const marker = L.circleMarker([markerLat, markerLng], {
+                        radius: 10,
+                        fillColor: getColorByArea(trabajo.area),
+                        color: '#fff',
+                        weight: 3,
+                        opacity: 1,
+                        fillOpacity: 0.9
+                    }).addTo(map);
+
+                    marker.bindPopup(`
+                        <div style="max-width: 300px;">
+                            <strong style="font-size: 14px;">${trabajo.titulo}</strong><br>
+                            <em>${trabajo.autor}</em> (${trabajo.anio})<br>
+                            <small>Director/a: ${trabajo.director}</small>${trabajo.codirector ? `<br><small>Codirector/a: ${trabajo.codirector}</small>` : ``}<br>
+                            <span style="display: inline-block; margin-top: 4px; padding: 2px 6px; background: ${getColorByArea(trabajo.area)}; color: white; border-radius: 4px; font-size: 11px;">
+                                ${getAreaLabel(trabajo.area)}
+                            </span>
+                        </div>
+                    `);
+
+                    markers.push(marker);
+                    contadorMarcadores++;
+                }
+            });
+
+            console.log(`✅ Marcadores en el mapa: ${contadorMarcadores} de ${filtered.length} trabajos`);
+
+            const counter = document.getElementById('mapa-counter');
+            if (counter) {
+                const total = trabajos.length;
+                if (filtered.length === total) {
+                    counter.innerHTML = `<strong>${contadorMarcadores}</strong> trabajos en el mapa`;
+                } else {
+                    counter.innerHTML = `<strong>${contadorMarcadores}</strong> de <strong>${total}</strong> trabajos`;
+                }
+            }
+        }
+
+        function renderTrabajos() {
+            const grid = document.getElementById('trabajos-grid');
+            const noResults = document.getElementById('no-results');
+            grid.innerHTML = '';
+
+            const filtered = filterTrabajos();
+
+            if (filtered.length === 0) {
+                noResults.style.display = 'block';
+                const countEl = document.getElementById('results-count-trabajos');
+                if (countEl) countEl.innerHTML = '';
+                return;
+            }
+
+            noResults.style.display = 'none';
+
+            const countEl = document.getElementById('results-count-trabajos');
+            if (countEl) {
+                const total = trabajos.length;
+                if (filtered.length === total) {
+                    countEl.innerHTML = `<strong>${total}</strong> trabajos`;
+                } else {
+                    countEl.innerHTML = `<strong>${filtered.length}</strong> de ${total} trabajos`;
+                }
+            }
+
+            filtered.forEach(trabajo => {
+                const card = document.createElement('div');
+                card.className = 'trabajo-card';
+                card.innerHTML = `
+                    <div class="trabajo-header">
+                        <span class="area-badge badge-${trabajo.area}">${getAreaLabel(trabajo.area)}</span>
+                        <h3 class="trabajo-titulo">${trabajo.titulo}</h3>
+                        <div class="trabajo-meta">
+                            ${trabajo.autor} • ${trabajo.anio}<br>
+                            <small>Director/a: ${trabajo.director}${trabajo.codirector ? `<br>Codirector/a: ${trabajo.codirector}` : ``}</small>
+                        </div>
+                    </div>
+                    ${trabajo.aplicabilidad ? `
+                    <div class="aplicabilidad">
+                        ${trabajo.aplicabilidad}
+                    </div>
+                    ` : ''}
+                    ${trabajo.ridUrl ? `
+                    <a href="${trabajo.ridUrl}" target="_blank" class="rid-link">Ver en RID-UNRN →</a>
+                    ` : ''}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+
+
+        function countBy(items, getter) {
+            return items.reduce((acc, item) => {
+                const key = getter(item);
+                if (!key) return acc;
+                acc[key] = (acc[key] || 0) + 1;
+                return acc;
+            }, {});
+        }
+
+        function renderBars(containerId, data, options = {}) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const entries = Object.entries(data);
+            const sorted = options.sort === 'alpha'
+                ? entries.sort((a, b) => a[0].localeCompare(b[0]))
+                : entries.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+            const limited = options.limit ? sorted.slice(0, options.limit) : sorted;
+            const max = Math.max(...limited.map(([, value]) => value), 1);
+            container.innerHTML = limited.map(([label, value]) => `
+                <div class="bar-row">
+                    <div class="bar-label">${label}</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: ${(value / max) * 100}%"></div></div>
+                    <div class="bar-value">${value}</div>
+                </div>
+            `).join('');
+        }
+
+        function getAporteCategorias(trabajo) {
+            if (Array.isArray(trabajo.aportes) && trabajo.aportes.length) {
+                return [...new Set(trabajo.aportes)];
+            }
+            const texto = `${trabajo.titulo} ${trabajo.area} ${trabajo.aplicabilidad || ''}`.toLowerCase();
+            const categorias = [];
+            if (/riesgo|inundaci|costera|costa|eros|remoci|peligros|subsidencia|volc/.test(texto)) categorias.push('Riesgos y planificación');
+            if (/agua|acuífer|hidro|río|fluvial|marea|inundaci|ambiental/.test(texto)) categorias.push('Agua, ambiente y gestión pública');
+            if (/hidrocarb|reservorio|co2|geotérm|fracking|fracturamiento|energ|shale|sello/.test(texto)) categorias.push('Energía y transición energética');
+            if (/mineral|veta|alteraci|geoquímica|uranio|cobre|au-|ag|metales|exploración mineral|blancos/.test(texto)) categorias.push('Recursos minerales');
+            if (/patrimonio|geoturismo|paleont|huellas|fósil|icnolog|sitio de interés/.test(texto)) categorias.push('Patrimonio y geoturismo');
+            if (/cartograf|estratigraf|petrograf|procedencia|tect|basamento|estructura|geología|geomorfolog|paleoambiente/.test(texto)) categorias.push('Conocimiento geológico de base');
+            return [...new Set(categorias)];
+        }
+
+        function renderStats() {
+            // Tarjetas resumen
+            const summaryEl = document.getElementById('stats-summary-cards');
+            if (summaryEl) {
+                const years = [...new Set(trabajos.map(t => t.anio))].sort();
+                const areas = [...new Set(trabajos.map(t => t.area))];
+                const directors = [...new Set(trabajos.map(t => t.director))];
+                summaryEl.innerHTML = `
+                    <div class="stats-summary-card"><div class="num">${trabajos.length}</div><div class="lbl">trabajos finales</div></div>
+                    <div class="stats-summary-card"><div class="num">${years.length}</div><div class="lbl">años de producción<br>(${years[0]}–${years[years.length-1]})</div></div>
+                    <div class="stats-summary-card"><div class="num">${areas.length}</div><div class="lbl">áreas temáticas</div></div>
+                    <div class="stats-summary-card"><div class="num">${directors.length}</div><div class="lbl">docentes directores/as</div></div>
+                `;
+            }
+            renderBars('stats-anios', countBy(trabajos, t => String(t.anio)), {sort: 'alpha'});
+            renderBars('stats-areas', countBy(trabajos, t => getAreaLabel(t.area)));
+
+            const aporteCounts = {};
+            trabajos.forEach(t => {
+                getAporteCategorias(t).forEach(cat => {
+                    aporteCounts[cat] = (aporteCounts[cat] || 0) + 1;
+                });
+            });
+            renderBars('stats-aportes', aporteCounts);
+
+        }
+
+        // NAVEGACIÓN
+        document.querySelectorAll('.nav button[data-view]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const view = btn.dataset.view;
+                
+                document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.view-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(view + '-view').classList.add('active');
+                
+                if (view === 'mapa') {
+                    setTimeout(() => map.invalidateSize(), 100);
+                } else if (view === 'estadisticas') {
+                    renderStats();
+                }
+            });
+        });
+
+        // LIMPIAR FILTROS
+        document.getElementById('limpiar-mapa').addEventListener('click', () => {
+            resetFiltrosIniciales();
+            renderMap();
+        });
+
+        document.getElementById('limpiar-trabajos').addEventListener('click', () => {
+            resetFiltrosIniciales();
+            renderTrabajos();
+        });
+
+        // FILTROS MAPA
+        document.getElementById('buscar-mapa').addEventListener('input', (e) => {
+            currentFilters.buscar = e.target.value;
+            renderMap();
+        });
+
+        document.getElementById('area-mapa').addEventListener('change', (e) => {
+            currentFilters.area = e.target.value;
+            renderMap();
+        });
+
+        document.getElementById('aporte-mapa').addEventListener('change', (e) => {
+            currentFilters.aporte = e.target.value;
+            renderMap();
+        });
+
+        document.getElementById('anio-mapa').addEventListener('change', (e) => {
+            currentFilters.anio = e.target.value;
+            renderMap();
+        });
+
+        // FILTROS TRABAJOS
+        document.getElementById('buscar-trabajos').addEventListener('input', (e) => {
+            currentFilters.buscar = e.target.value;
+            renderTrabajos();
+        });
+
+        document.getElementById('area-trabajos').addEventListener('change', (e) => {
+            currentFilters.area = e.target.value;
+            renderTrabajos();
+        });
+
+        document.getElementById('aporte-trabajos').addEventListener('change', (e) => {
+            currentFilters.aporte = e.target.value;
+            renderTrabajos();
+        });
+
+        document.getElementById('anio-trabajos').addEventListener('change', (e) => {
+            currentFilters.anio = e.target.value;
+            renderTrabajos();
+        });
+
+        function resetFiltrosIniciales() {
+            currentFilters = { buscar: '', area: '', aporte: '', anio: '' };
+            ['buscar-mapa', 'buscar-trabajos'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            ['area-mapa', 'area-trabajos', 'aporte-mapa', 'aporte-trabajos', 'anio-mapa', 'anio-trabajos'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        }
+
+        // INICIALIZAR
+        console.log('🏔️ Trabajos Finales UNRN - Iniciando...');
+        console.log(`📊 Total de trabajos en la base de datos: ${trabajos.length}`);
+        resetFiltrosIniciales();
+        renderMap();
+        renderTrabajos();
+        renderStats();
+    </script>
+</body>
+</html>
